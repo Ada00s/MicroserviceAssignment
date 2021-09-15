@@ -142,5 +142,6 @@ namespace ClientApi.Handlers.Helpers
                 throw new Exception("Exception occured when creating files directory", e);
             }
         }
+
     }
 }

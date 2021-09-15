@@ -4,6 +4,7 @@ namespace ClientApi.Models
 {
     public abstract class Customer
     {
+        public int Id { get; set; }
         public string CompanyName { get; set; }
         public string Cvr { get; set; }
         public string Mail { get; set; }
