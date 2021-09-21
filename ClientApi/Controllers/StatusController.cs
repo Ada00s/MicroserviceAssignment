@@ -11,9 +11,9 @@ namespace ClientApi.Controllers
     [Route("[controller]")]
     public class StatusController : ControllerBase
     {
-        private OrderHandler _orderHandler { get; set; }
+        private IOrderHandler _orderHandler { get; set; }
 
-        public StatusController(OrderHandler orderHandler)
+        public StatusController(IOrderHandler orderHandler)
         {
             _orderHandler = orderHandler;
         }

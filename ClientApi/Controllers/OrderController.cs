@@ -13,9 +13,9 @@ namespace ClientApi.Controllers
     [Route("[controller]")]
     public class OrderController : ControllerBase
     {
-        private OrderHandler _orderHandler { get; set; }
+        private IOrderHandler _orderHandler { get; set; }
 
-        public OrderController (OrderHandler orderHandler)
+        public OrderController (IOrderHandler orderHandler)
         {
             _orderHandler = orderHandler;
         }

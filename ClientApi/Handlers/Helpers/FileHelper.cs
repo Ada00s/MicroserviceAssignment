@@ -21,7 +21,7 @@ namespace ClientApi.Handlers.Helpers
             {
                 if (CheckRelativePath(relativePath))
                 {
-                    path += $@"\{relativePath}" + fileName;
+                    path += $@"\{relativePath}\" + fileName;
                     using (FileStream stream = File.Create(path))
                     {
                         byte[] input = new UTF8Encoding(true).GetBytes(jsonInput);
@@ -89,28 +89,37 @@ namespace ClientApi.Handlers.Helpers
 
         public static int GetLastId(string relativePath)
         {
-            var path = Directory.GetCurrentDirectory() + $@"\{relativePath}";
-            var fileNames = Directory.GetFiles(path);
-            var IdsList = new List<int>();
+            if (CheckRelativePath(relativePath))
+            {
+                var path = Directory.GetCurrentDirectory() + $@"\{relativePath}";
+                var fileNames = Directory.GetFiles(path);
+                var IdsList = new List<int>();
 
-            foreach(string fileName in fileNames)
-            {
-                var Id = fileName;
-                int cutIndex = fileName.IndexOf(".");
-                if(cutIndex >= 0)
+                foreach (string fileName in fileNames)
                 {
-                    Id = fileName.Substring(0, cutIndex);
+                    var Id = fileName;
+                    int cutIndex = fileName.IndexOf(".");
+                    int lastSlash = fileName.LastIndexOf(@"\");
+                    var lenght = cutIndex - (lastSlash + 1);
+                    if (cutIndex >= 0)
+                    {
+                        Id = fileName.Substring(lastSlash+1, lenght);
+                    }
+                    IdsList.Add(Int16.Parse(Id));
                 }
-                IdsList.Add(Int16.Parse(Id));
-            }
-            if(IdsList.Count == 0)
-            {
-                return 1000;
+                if (IdsList.Count == 0)
+                {
+                    return 1000;
+                }
+                else
+                {
+                    IdsList.Sort();
+                    return IdsList.Last();
+                }
             }
             else
             {
-                IdsList.Sort();
-                return IdsList.Last();
+                throw new ApiException(System.Net.HttpStatusCode.Forbidden, "Could not access required directory");
             }
         }
 
