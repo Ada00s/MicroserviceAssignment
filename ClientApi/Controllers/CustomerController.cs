@@ -13,9 +13,9 @@ namespace ClientApi.Controllers
     [Route("[controller]")]
     public class CustomerController : ControllerBase
     {
-        private CustomerHandler _customerHandler { get; set; }
+        private ICustomerHandler _customerHandler { get; set; }
 
-        public CustomerController(CustomerHandler customerHandler)
+        public CustomerController(ICustomerHandler customerHandler)
         {
             _customerHandler = customerHandler;
         }
@@ -60,7 +60,7 @@ namespace ClientApi.Controllers
             return false;
         }
 
-        [HttpPost]
+        [HttpPut]
         public async Task<ActionResult<bool>> UpdateCustomer(Customer existingCustomer)
         {
             try

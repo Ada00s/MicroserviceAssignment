@@ -9,9 +9,16 @@ using System.Net;
 
 namespace ClientApi.Handlers
 {
-    public class OrderHandler
+    public interface IOrderHandler
     {
-        private string OrdersRelativePath = @"Data\Orders";
+        Task<bool> CreateOrder(Order newOrder);
+        Task<Order> GetOrderById(int orderId);
+        Task<List<Order>> GetOrdersForCustomer(int customerId);
+        Task<bool> UpdateOrderStatus(int orderId, int switchValue);
+    }
+    public class OrderHandler : IOrderHandler
+    {
+        private readonly string OrdersRelativePath = @"Data\Orders";
         public async Task<bool> CreateOrder (Order newOrder)
         {
             //TODO: Get customer to check if exists and check their billing situation (by status of last order)

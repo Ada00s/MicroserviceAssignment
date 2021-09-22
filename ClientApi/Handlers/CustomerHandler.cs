@@ -9,9 +9,16 @@ using System.Threading.Tasks;
 
 namespace ClientApi.Handlers
 {
-    public class CustomerHandler
+    public interface ICustomerHandler
     {
-        private string CustomersRelativePath = @"Data\Customers";
+        Task<bool> CreateNewCustomer(Customer newCustomer);
+        Task<List<Customer>> GetAllCustomers();
+        Task<bool> UpdateCustomer(Customer existingCustomer);
+        Task<Customer> GetCustomerById(int customerId);
+    }
+    public class CustomerHandler : ICustomerHandler
+    {
+        private readonly string CustomersRelativePath = @"Data\Customers";
 
         public async Task<bool> CreateNewCustomer(Customer newCustomer)
         {
