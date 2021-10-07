@@ -1,5 +1,5 @@
-﻿using ClientApi.Handlers.Helpers;
-using ClientApi.Models;
+﻿using CommonLib.Helpers;
+using CommonLib.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +19,20 @@ namespace ClientApi.Handlers
     public class OrderHandler : IOrderHandler
     {
         private readonly string OrdersRelativePath = @"Data\Orders";
+        private readonly CustomerHandler _customerHandler;
+
+        public OrderHandler(CustomerHandler handler)
+        {
+            _customerHandler = handler;
+        }
+
         public async Task<bool> CreateOrder (Order newOrder)
         {
-            //TODO: Get customer to check if exists and check their billing situation (by status of last order)
+            var CustomerHistory = await CheckCustomerCreditability(newOrder.CustomerID);
+            if(CustomerHistory != null)
+            {
+                throw new ApiException(HttpStatusCode.Forbidden, $"Customer has {CustomerHistory.Count} unpaid order(s).");
+            }
             newOrder.OrderId = FileHelper.GetLastId(OrdersRelativePath) + 1;
             try
             {
@@ -48,7 +59,7 @@ namespace ClientApi.Handlers
 
         public async Task<List<Order>> GetOrdersForCustomer (int customerId)
         {
-            bool exists = false; //TODO: Check if customer exists
+            bool exists = !(await _customerHandler.GetCustomerById(customerId)==null);
             if (!exists)
             {
                 throw new ApiException(HttpStatusCode.NotFound, $"Could not find customer with Id {customerId}");
@@ -75,6 +86,23 @@ namespace ClientApi.Handlers
         {
             //TODO: Messaging to the warehouse. Returns true if warehouse can process this order
             return false;
+        }
+
+        /// <summary>
+        /// Return null if customer has everything paid
+        /// </summary>
+        public async Task<List<Order>> CheckCustomerCreditability(int customerId)
+        {
+            var customerOrders = await GetOrdersForCustomer(customerId);
+            var UnpaidOrders = new List<Order>();
+            foreach (var ord in customerOrders)
+            {
+                if (ord.Status != ShipmentStatus.Paid || ord.Status != ShipmentStatus.Cancelled)
+                {
+                    UnpaidOrders.Add(ord);
+                }
+            }
+            return UnpaidOrders;
         }
     }
 }

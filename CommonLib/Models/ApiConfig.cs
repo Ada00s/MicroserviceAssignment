@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ClientApi.Models
+namespace CommonLib.Models
 {
     public class ApiConfig
     {

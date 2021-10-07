@@ -1,6 +1,6 @@
 ﻿using ClientApi.Handlers;
-using ClientApi.Handlers.Helpers;
-using ClientApi.Models;
+using CommonLib.Helpers;
+using CommonLib.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace ClientApi.Controllers
         [HttpGet("all/{customerId}")]
         public async Task<ActionResult<List<Order>>> GetAllCustomersOrders(string customerId)
         {
-            if (!Int16.TryParse(customerId, out var id))
+            if (!short.TryParse(customerId, out var id))
             {
                 return StatusCode((int)HttpStatusCode.BadRequest, "Provided not valid customer id");
             }
@@ -45,7 +45,7 @@ namespace ClientApi.Controllers
         [HttpGet("{orderId}")]
         public async Task<ActionResult<Order>> GetOrderById(string orderId)
         {
-            if (!Int16.TryParse(orderId, out var id))
+            if (!short.TryParse(orderId, out var id))
             {
                 return StatusCode((int)HttpStatusCode.BadRequest, "Provided not valid order id");
             }

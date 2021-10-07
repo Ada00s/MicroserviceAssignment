@@ -1,4 +1,4 @@
-﻿namespace ClientApi.Models
+﻿namespace CommonLib.Models
 {
     //File to put potential enums
   public enum ShipmentStatus

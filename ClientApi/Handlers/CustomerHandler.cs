@@ -1,5 +1,5 @@
-﻿using ClientApi.Handlers.Helpers;
-using ClientApi.Models;
+﻿using CommonLib.Helpers;
+using CommonLib.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -53,9 +53,6 @@ namespace ClientApi.Handlers
         {
             var fileName = customerId.ToString() + ".json";
             return await FileHelper.GetObjectFromFile<Customer>(CustomersRelativePath, fileName);
-        }
-
-
-        
+        }        
     }
 }

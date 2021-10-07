@@ -1,5 +1,5 @@
 using ClientApi.Handlers;
-using ClientApi.Models;
+using CommonLib.Models;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

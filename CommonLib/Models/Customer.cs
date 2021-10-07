@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ClientApi.Models
+namespace CommonLib.Models
 {
     public class Customer
     {
