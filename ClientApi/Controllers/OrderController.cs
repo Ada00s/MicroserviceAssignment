@@ -66,7 +66,7 @@ namespace ClientApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<bool>> CreateOrder([FromBody]Order newOrder)
+        public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody]Order newOrder)
         {
             try
             {

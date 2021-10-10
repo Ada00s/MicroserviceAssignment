@@ -8,30 +8,27 @@ namespace MicroserviceAssignment.Handlers
 {
     public class OrdersHandler
     {
-        private WarehouseHandler _warehouseHandler { get; set; }
-
-        public OrdersHandler(WarehouseHandler handler)
-        {
-            _warehouseHandler = handler;
-        }
-
         public async Task<OrderResponse> HandleOrder(Order newOrder)
         {
+            var response = new OrderResponse();
+            Console.WriteLine($"Processing Order with ID {newOrder.OrderId}");
             try
             {
                 if (!await CheckIfInStock(newOrder))
                 {
                     return new OrderResponse { Message = "Not enough items in stock", OrderId = newOrder.OrderId, Price = 0, Status = ShipmentStatus.Cancelled };
                 }
-
-                var price = await CalculatePrice(newOrder);
-                ReserveProducts(newOrder);
-                return new OrderResponse { Message = $"Shipped order with an Id {newOrder.OrderId}. Price: {price}.", OrderId = newOrder.OrderId, Price = price, Status = ShipmentStatus.Shipped };
-            }catch (Exception e)
+                else
+                {
+                    var price = await CalculatePrice(newOrder);
+                    ReserveProducts(newOrder);
+                    return new OrderResponse { Message = $"Shipped order with an Id {newOrder.OrderId}. Price: {price}.", OrderId = newOrder.OrderId, Price = price, Status = ShipmentStatus.Shipped };
+                }
+            }
+            catch (Exception e)
             {
                 return new OrderResponse { Message = $"Encountered error: {e.Message}", OrderId = newOrder.OrderId, Price = 0, Status = ShipmentStatus.Cancelled };
             }
-           
         }
 
         /// <summary>
@@ -41,7 +38,7 @@ namespace MicroserviceAssignment.Handlers
         {
             foreach (var prod in order.ProductsList)
             {
-                if((await _warehouseHandler.GetNumberInStock(prod.Key) - prod.Value) <0)
+                if((await WarehouseHandler.GetNumberInStock(prod.Key) - prod.Value) <0)
                 {
                     return false;
                 }
@@ -54,7 +51,7 @@ namespace MicroserviceAssignment.Handlers
             var result = 0.0;
             foreach (var prod in order.ProductsList)
             {
-                result += (await _warehouseHandler.GetItemPrice(prod.Key) * prod.Value);
+                result += (await WarehouseHandler.GetItemPrice(prod.Key) * prod.Value);
             }
             return result;
         }
@@ -64,7 +61,7 @@ namespace MicroserviceAssignment.Handlers
             List<Task> reservations = new List<Task>();
             foreach(var prod in order.ProductsList)
             {
-                reservations.Add(_warehouseHandler.ReserveProduct(prod.Key, prod.Value));
+                reservations.Add(WarehouseHandler.ReserveProduct(prod.Key, prod.Value));
             }
             Task.WaitAll(reservations.ToArray());
         }

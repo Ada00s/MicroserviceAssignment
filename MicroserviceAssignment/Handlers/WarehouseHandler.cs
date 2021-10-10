@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace MicroserviceAssignment.Handlers
 {
-    public class WarehouseHandler
+    public static class WarehouseHandler
     {
         private static string RelativePath = @"Data\Stock";
 
         /// <summary>
         /// Check if any data exists, if not, generates default. Return true when data is present or successfully initialized.
         /// </summary>
-        public async Task<bool> DataInitialization()
+        public static async Task<bool> DataInitialization()
         {
             if (FileHelper.CheckIfDataExists(RelativePath))
             {
@@ -33,19 +33,19 @@ namespace MicroserviceAssignment.Handlers
             }
         }
 
-        public async Task<Product> GetProduct(string ProductName)
+        public static async Task<Product> GetProduct(string ProductName)
         {
             return await FileHelper.GetObjectFromFile<Product>(RelativePath, ProductName);
         }
 
-        public async Task ReserveProduct(string product, int Reserve)
+        public static async Task ReserveProduct(string product, int Reserve)
         {
             var prod = await GetProduct(product);
             prod.Reserved = +Reserve;
             await FileHelper.AddOrOverwriteFile(RelativePath, product, JsonConvert.SerializeObject(prod));
         }
 
-        public async Task CompleteOrder(string product, int Reserved)
+        public static async Task CompleteOrder(string product, int Reserved)
         {
             var prod = await GetProduct(product);
             prod.NumberInStock -= Reserved;
@@ -53,12 +53,12 @@ namespace MicroserviceAssignment.Handlers
             await FileHelper.AddOrOverwriteFile(RelativePath, product, JsonConvert.SerializeObject(prod));
         }
 
-        public async Task<int> GetNumberInStock(string product)
+        public static async Task<int> GetNumberInStock(string product)
         {
             return (await GetProduct(product)).NumberInStock;
         }
 
-        public async Task<double> GetItemPrice(string product)
+        public static async Task<double> GetItemPrice(string product)
         {
             return (await GetProduct(product)).Price;
         }

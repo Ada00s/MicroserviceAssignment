@@ -7,6 +7,8 @@ namespace CommonLib.Models
 {
     public class ApiConfig
     {
-        
+        public string Host { get; set; }
+        public string VUser { get; set; }
+        public string Password { get; set; }
     }
 }
