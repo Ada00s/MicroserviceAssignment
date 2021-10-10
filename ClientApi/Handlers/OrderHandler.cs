@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Net;
 using EasyNetQ;
 using Microsoft.Extensions.Options;
+using System.IO;
 
 namespace ClientApi.Handlers
 {
@@ -20,7 +21,7 @@ namespace ClientApi.Handlers
     }
     public class OrderHandler : IOrderHandler
     {
-        private readonly string OrdersRelativePath = @"Data\Orders";
+        private readonly string OrdersRelativePath = Path.Combine("Data", "Orders");
         private readonly ICustomerHandler _customerHandler;
         private readonly IOptions<ApiConfig> _config;
         private readonly IBus _bus;
@@ -124,7 +125,7 @@ namespace ClientApi.Handlers
                 var UnpaidOrders = new List<Order>();
                 foreach (var ord in customerOrders)
                 {
-                    if (ord.Status != ShipmentStatus.Paid || ord.Status != ShipmentStatus.Cancelled)
+                    if (!(ord.Status == ShipmentStatus.Paid || ord.Status == ShipmentStatus.Cancelled))
                     {
                         UnpaidOrders.Add(ord);
                     }

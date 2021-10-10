@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "serviceActions": {
+        "clientapi": "StartDebugging",
+        "microserviceassignment": "StartDebugging"
+      },
+      "commandVersion": "1.0"
+    }
+  }
+}

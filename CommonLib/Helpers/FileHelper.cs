@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,7 +22,7 @@ namespace CommonLib.Helpers
             {
                 if (CheckRelativePath(relativePath))
                 {
-                    path += $@"\{relativePath}\" + fileName;
+                    path = Path.Combine(Directory.GetCurrentDirectory(), relativePath, fileName);
                     using (FileStream stream = File.Create(path))
                     {
                         byte[] input = new UTF8Encoding(true).GetBytes(jsonInput);
@@ -63,7 +64,7 @@ namespace CommonLib.Helpers
             {
                 fileName += ".json";
             }
-            var path = Directory.GetCurrentDirectory() + $@"\{relativePath}\" + fileName;
+            var path = Path.Combine(Directory.GetCurrentDirectory(), relativePath, fileName);
             if (!useRelativePath)
             {
                 path = relativePath;
@@ -75,23 +76,30 @@ namespace CommonLib.Helpers
         //Assumes that all files in specific directory represents specific object Type
         public static async Task<List<T>>GetAllDataForDirectory<T>(string relativePath)
         {
-            var path = Directory.GetCurrentDirectory() + $@"\{relativePath}";
-            var files = Directory.GetFiles(path);
-            var results = new List<T>();
-
-            foreach(string filename in files)
+            try
             {
-                results.Add(JsonConvert.DeserializeObject<T>(await GetFilesByName(filename, "", false)));
-            }
+                var baseDir = Directory.GetCurrentDirectory();
+                var files = Directory.GetFiles(Path.Combine(baseDir, relativePath));
+                var results = new List<T>();
 
-            return results;
+                foreach (string filename in files)
+                {
+                    results.Add(JsonConvert.DeserializeObject<T>(await GetFilesByName(filename, "", false)));
+                }
+
+                return results;
+            }catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return null;
+            }
         }
         
         public static int GetLastId(string relativePath)
         {
             if (CheckRelativePath(relativePath))
             {
-                var path = Directory.GetCurrentDirectory() + $@"\{relativePath}";
+                var path = Path.Combine(Directory.GetCurrentDirectory(), relativePath);
                 var fileNames = Directory.GetFiles(path);
                 var IdsList = new List<int>();
 
@@ -99,7 +107,7 @@ namespace CommonLib.Helpers
                 {
                     var Id = fileName;
                     int cutIndex = fileName.IndexOf(".");
-                    int lastSlash = fileName.LastIndexOf(@"\");
+                    int lastSlash = fileName.LastIndexOf(@"/");
                     var lenght = cutIndex - (lastSlash + 1);
                     if (cutIndex >= 0)
                     {
@@ -144,18 +152,18 @@ namespace CommonLib.Helpers
         private static bool CheckRelativePath(string relativePath)
         {
             var current = Directory.GetCurrentDirectory();
-            var folders = relativePath.Split(@"\").ToList();
+            var folders = relativePath.Split(@"/").ToList();
             try
             {
                 foreach (string folder in folders)
                 {
-                    current += @$"\{folder}";
+                    current += @$"/{folder}";
                     if (!Directory.Exists(current))
                     {
                         Directory.CreateDirectory(current);
                     }
                 }
-                if(Directory.Exists(Directory.GetCurrentDirectory() + $@"\{relativePath}"))
+                if(Directory.Exists(Directory.GetCurrentDirectory() + $@"/{relativePath}"))
                 {
                     return true;
                 }

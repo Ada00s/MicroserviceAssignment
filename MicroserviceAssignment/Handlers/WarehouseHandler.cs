@@ -4,6 +4,7 @@ using MicroserviceAssignment.Handlers.Helper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace MicroserviceAssignment.Handlers
 {
     public static class WarehouseHandler
     {
-        private static string RelativePath = @"Data\Stock";
+        private static string RelativePath = Path.Combine("Data", "Stock");
 
         /// <summary>
         /// Check if any data exists, if not, generates default. Return true when data is present or successfully initialized.
