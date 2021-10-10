@@ -11,14 +11,21 @@ namespace MicroserviceAssignment
 {
     public static class Subscriber 
     {
-        public static async Task Run(CancellationToken token)
+        public static async Task Run()
         {
             Console.WriteLine("Starting the Subscriber");
-            while (!token.IsCancellationRequested)
+            var ordersHandler = new OrdersHandler();
+            var bus = RabbitHutch.CreateBus($"host={ Settings.Host};virtualHost={Settings.VirualHost};username={Settings.VirualHost};password={Settings.Password}");
+            while (true)
             {
-                var ordersHandler = new OrdersHandler();
-                var bus = RabbitHutch.CreateBus($"host = { Settings.Host}; virtualHost = {Settings.VirualHost}; username = {Settings.VirualHost}; password = {Settings.Password}");
-                await bus.Rpc.RespondAsync<Order, OrderResponse>(async (r) => await ordersHandler.HandleOrder(r));
+                try
+                {
+                    await bus.Rpc.RespondAsync<StatusSignalMessage, StatusSignal>(async (r) => await ordersHandler.HandleStatusSignal(r));
+                    await bus.Rpc.RespondAsync<Order, OrderResponse>(async (r) => await ordersHandler.HandleOrder(r));
+                }catch (Exception e)
+                {
+                    Console.WriteLine($"EXCEPTION: {e.Message}");
+                }
             }
         }
 

@@ -53,7 +53,7 @@ namespace CommonLib.Helpers
             }
             catch (Exception e)
             {
-                throw new ApiException(System.Net.HttpStatusCode.NotFound, "Could not find files for specific order");
+                throw new ApiException(System.Net.HttpStatusCode.NotFound, $"Could not find {filename} files");
             }
         }
 
@@ -63,7 +63,7 @@ namespace CommonLib.Helpers
             {
                 fileName += ".json";
             }
-            var path = Directory.GetCurrentDirectory() + $@"\{relativePath}" + fileName;
+            var path = Directory.GetCurrentDirectory() + $@"\{relativePath}\" + fileName;
             if (!useRelativePath)
             {
                 path = relativePath;

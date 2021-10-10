@@ -20,6 +20,7 @@ namespace MicroserviceAssignment.Handlers.Helper
         public static async Task<bool> Initialize()
         {
             _lastId = 1000;
+            Data = new List<Product>();
             AddProduct("Product#1", 25.99, 100);
             AddProduct("Product#2", 55.19, 60);
             AddProduct("Product#3", 99.99, 40);

@@ -33,8 +33,8 @@ namespace ClientApi
                 var config = new ApiConfig();
                 hostContext.Configuration.GetSection("ApiConfig").Bind(config);
                 services
-                .AddSingleton<IOrderHandler, OrderHandler>()
-                .AddSingleton<ICustomerHandler, CustomerHandler>();
+                .AddSingleton<ICustomerHandler, CustomerHandler>()
+                .AddSingleton<IOrderHandler, OrderHandler>();
                 
             }).UseStartup<Startup>();
     }
