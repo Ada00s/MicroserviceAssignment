@@ -1,4 +1,4 @@
-﻿namespace ClientApi.Models
+﻿namespace CommonLib.Models
 {
     public class Product
     {

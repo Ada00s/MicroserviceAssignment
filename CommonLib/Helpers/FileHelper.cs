@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClientApi.Handlers.Helpers
+namespace CommonLib.Helpers
 {
     public static class FileHelper
     {
@@ -86,7 +86,7 @@ namespace ClientApi.Handlers.Helpers
 
             return results;
         }
-
+        
         public static int GetLastId(string relativePath)
         {
             if (CheckRelativePath(relativePath))
@@ -121,6 +121,24 @@ namespace ClientApi.Handlers.Helpers
             {
                 throw new ApiException(System.Net.HttpStatusCode.Forbidden, "Could not access required directory");
             }
+        }
+
+        public static bool CheckIfDataExists(string relativePath)
+        {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return false;
+            }
+            try
+            {
+                var current = Directory.GetCurrentDirectory();
+                return Directory.EnumerateFileSystemEntries(Path.Combine(current, relativePath)).Any();
+
+            }catch (Exception)
+            {
+                return false;
+            }
+
         }
 
         private static bool CheckRelativePath(string relativePath)

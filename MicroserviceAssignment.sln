@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroserviceAssignment", "MicroserviceAssignment\MicroserviceAssignment.csproj", "{C2E88201-4BB2-4079-9F9B-A01CDF1D9FC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroserviceAssignment", "MicroserviceAssignment\MicroserviceAssignment.csproj", "{C2E88201-4BB2-4079-9F9B-A01CDF1D9FC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientApi", "ClientApi\ClientApi.csproj", "{3295027E-D83B-4B15-9C25-2A7FAB7F65FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientApi", "ClientApi\ClientApi.csproj", "{3295027E-D83B-4B15-9C25-2A7FAB7F65FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLib", "CommonLib\CommonLib.csproj", "{31BDBEDF-B33A-4A4B-9F66-B5F1013B69AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{3295027E-D83B-4B15-9C25-2A7FAB7F65FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3295027E-D83B-4B15-9C25-2A7FAB7F65FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3295027E-D83B-4B15-9C25-2A7FAB7F65FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31BDBEDF-B33A-4A4B-9F66-B5F1013B69AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31BDBEDF-B33A-4A4B-9F66-B5F1013B69AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31BDBEDF-B33A-4A4B-9F66-B5F1013B69AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31BDBEDF-B33A-4A4B-9F66-B5F1013B69AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

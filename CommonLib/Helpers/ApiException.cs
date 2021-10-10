@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace ClientApi.Handlers.Helpers
+namespace CommonLib.Helpers
 {
     public class ApiException : Exception
     {

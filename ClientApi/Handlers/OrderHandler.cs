@@ -1,17 +1,18 @@
-﻿using ClientApi.Handlers.Helpers;
-using ClientApi.Models;
+﻿using CommonLib.Helpers;
+using CommonLib.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Net;
+using EasyNetQ;
 
 namespace ClientApi.Handlers
 {
     public interface IOrderHandler
     {
-        Task<bool> CreateOrder(Order newOrder);
+        Task<OrderResponse> CreateOrder(Order newOrder);
         Task<Order> GetOrderById(int orderId);
         Task<List<Order>> GetOrdersForCustomer(int customerId);
         Task<bool> UpdateOrderStatus(int orderId, int switchValue);
@@ -19,25 +20,43 @@ namespace ClientApi.Handlers
     public class OrderHandler : IOrderHandler
     {
         private readonly string OrdersRelativePath = @"Data\Orders";
-        public async Task<bool> CreateOrder (Order newOrder)
+        private readonly CustomerHandler _customerHandler;
+        private readonly ApiConfig _config;
+        private readonly IBus _bus;
+
+        public OrderHandler(CustomerHandler handler, ApiConfig config)
         {
-            //TODO: Get customer to check if exists and check their billing situation (by status of last order)
+            _customerHandler = handler;
+            _config = config;
+            _bus = RabbitHutch.CreateBus($"host = { _config.Host}; virtualHost = {_config.VUser}; username = {_config.VUser}; password = {_config.Password}");
+        }
+
+        public async Task<OrderResponse> CreateOrder (Order newOrder)
+        {
+            var CustomerHistory = await CheckCustomerCreditability(newOrder.CustomerID);
+            if(CustomerHistory != null)
+            {
+                throw new ApiException(HttpStatusCode.Forbidden, $"Customer has {CustomerHistory.Count} unpaid order(s).");
+            }
             newOrder.OrderId = FileHelper.GetLastId(OrdersRelativePath) + 1;
             try
             {
-                if(await SendOrder(newOrder))
+                var response = await SendOrder(newOrder);
+                if (response.Status == ShipmentStatus.Cancelled)
                 {
-                    var fileName = newOrder.OrderId.ToString();
-                    var serializedOrder = JsonConvert.SerializeObject(newOrder);
-                    await FileHelper.AddOrOverwriteFile(OrdersRelativePath, fileName, serializedOrder);
-                    return true;
+                    throw new ApiException(HttpStatusCode.NotAcceptable, $"Warehouse could not process the shipment. Message: {response.Message}");
                 }
+
+                var fileName = newOrder.OrderId.ToString();
+                var serializedOrder = JsonConvert.SerializeObject(newOrder);
+                await FileHelper.AddOrOverwriteFile(OrdersRelativePath, fileName, serializedOrder);
+                return response;
+
             }
             catch (Exception e)
             {
                 throw e;
             }
-            return true;
         }
 
         public async Task<Order> GetOrderById(int orderId)
@@ -48,7 +67,7 @@ namespace ClientApi.Handlers
 
         public async Task<List<Order>> GetOrdersForCustomer (int customerId)
         {
-            bool exists = false; //TODO: Check if customer exists
+            bool exists = !(await _customerHandler.GetCustomerById(customerId)==null);
             if (!exists)
             {
                 throw new ApiException(HttpStatusCode.NotFound, $"Could not find customer with Id {customerId}");
@@ -71,10 +90,26 @@ namespace ClientApi.Handlers
             return true;
         }
 
-        private async Task<bool> SendOrder(Order newOrder)
+        private async Task<OrderResponse> SendOrder(Order newOrder)
         {
-            //TODO: Messaging to the warehouse. Returns true if warehouse can process this order
-            return false;
+            return await _bus.Rpc.RequestAsync<Order, OrderResponse>(newOrder);
+        }
+
+        /// <summary>
+        /// Return null if customer has everything paid
+        /// </summary>
+        public async Task<List<Order>> CheckCustomerCreditability(int customerId)
+        {
+            var customerOrders = await GetOrdersForCustomer(customerId);
+            var UnpaidOrders = new List<Order>();
+            foreach (var ord in customerOrders)
+            {
+                if (ord.Status != ShipmentStatus.Paid || ord.Status != ShipmentStatus.Cancelled)
+                {
+                    UnpaidOrders.Add(ord);
+                }
+            }
+            return UnpaidOrders;
         }
     }
 }

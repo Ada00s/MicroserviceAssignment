@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace MicroserviceAssignment
 {
@@ -6,7 +7,7 @@ namespace MicroserviceAssignment
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Subscriber.Run(new System.Threading.CancellationToken(false));
         }
     }
 }
