@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MicroserviceAssignment.Handlers;
+using System;
 using System.Threading.Tasks;
 
 namespace MicroserviceAssignment
@@ -7,7 +8,9 @@ namespace MicroserviceAssignment
     {
         static void Main(string[] args)
         {
-            Subscriber.Run(new System.Threading.CancellationToken(false));
+            Task.WaitAll(WarehouseHandler.DataInitialization());
+            var subscriber = Task.Run(() => Subscriber.Run());
+            subscriber.Wait();
         }
     }
 }

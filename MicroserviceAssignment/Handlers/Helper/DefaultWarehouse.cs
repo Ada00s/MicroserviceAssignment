@@ -3,6 +3,7 @@ using CommonLib.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,13 +14,14 @@ namespace MicroserviceAssignment.Handlers.Helper
     /// </summary>
     public static class DefaultWarehouse
     {
-        private static string RelativePath = @"Data\Stock";
+        private static string RelativePath = Path.Combine("Data", "Stock");
         private static int _lastId;
         private static IList<Product> Data;
 
         public static async Task<bool> Initialize()
         {
             _lastId = 1000;
+            Data = new List<Product>();
             AddProduct("Product#1", 25.99, 100);
             AddProduct("Product#2", 55.19, 60);
             AddProduct("Product#3", 99.99, 40);

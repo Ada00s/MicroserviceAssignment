@@ -11,22 +11,29 @@ namespace MicroserviceAssignment
 {
     public static class Subscriber 
     {
-        public static async Task Run(CancellationToken token)
+        public static async Task Run()
         {
             Console.WriteLine("Starting the Subscriber");
-            while (!token.IsCancellationRequested)
+            var ordersHandler = new OrdersHandler();
+            var bus = RabbitHutch.CreateBus($"host={ Settings.Host};virtualHost={Settings.VirualHost};username={Settings.VirualHost};password={Settings.Password}");
+            while (true)
             {
-                var ordersHandler = new OrdersHandler();
-                var bus = RabbitHutch.CreateBus($"host = { Settings.Host}; virtualHost = {Settings.VirualHost}; username = {Settings.VirualHost}; password = {Settings.Password}");
-                await bus.Rpc.RespondAsync<Order, OrderResponse>(async (r) => await ordersHandler.HandleOrder(r));
+                try
+                {
+                    await bus.Rpc.RespondAsync<StatusSignalMessage, StatusSignal>(async (r) => await ordersHandler.HandleStatusSignal(r));
+                    await bus.Rpc.RespondAsync<Order, OrderResponse>(async (r) => await ordersHandler.HandleOrder(r));
+                }catch (Exception e)
+                {
+                    Console.WriteLine($"EXCEPTION: {e.Message}");
+                }
             }
         }
 
         private static class Settings
         {
             public const string Host = "cow.rmq2.cloudamqp.com";
-            public const string VirualHost = "sgjupbsr";
-            public const string Password = "YPG6BrZzn9WOWlzhopFZIr4bXKzz62zg";
+            public const string VirualHost = "upnvihcu";
+            public const string Password = "OkMPbpsOzpEUJjWCFuya9myDAypy1-41";
         }
     }
 }

@@ -22,6 +22,15 @@ namespace CommonLib.Models
         public ShipmentStatus Status { get; set; }
     } 
 
+    public class NewOrder
+    {
+        [JsonProperty(Required = Required.Always)]
+        public int CustomerID { get; set; }
+
+        [JsonProperty(Required = Required.Always)]
+        public IDictionary<string, int> ProductsList { get; set; }
+    }
+
     public class OrderResponse
     {
         [JsonProperty(Required = Required.Always)]

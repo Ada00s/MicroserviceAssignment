@@ -31,6 +31,26 @@ namespace MicroserviceAssignment.Handlers
             }
         }
 
+        public async Task<StatusSignal> HandleStatusSignal(StatusSignalMessage status)
+        {
+            Console.WriteLine($"Processing StatusChange for Order with ID {status.OrderId}");
+            switch (status.Status)
+            {
+                case ShipmentStatus.Cancelled:
+                    {
+                        await WarehouseHandler.CancellOrder(status.ProductsList);
+                        break;
+                    }
+                case ShipmentStatus.Paid :
+                {
+                        await WarehouseHandler.CompleteOrder(status.ProductsList);
+                        break;
+                }
+            }
+            return new StatusSignal { OrderId = status.OrderId, Status = status.Status };
+            
+        }
+
         /// <summary>
         /// Returns false if anything is missing from a stock
         /// </summary>
@@ -38,7 +58,7 @@ namespace MicroserviceAssignment.Handlers
         {
             foreach (var prod in order.ProductsList)
             {
-                if((await WarehouseHandler.GetNumberInStock(prod.Key) - prod.Value) <0)
+                if((await WarehouseHandler.GetNumberInStock(prod.Key) - prod.Value) <=0)
                 {
                     return false;
                 }

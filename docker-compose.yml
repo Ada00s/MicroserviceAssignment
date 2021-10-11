@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  microserviceassignment:
+    image: ${DOCKER_REGISTRY-}microserviceassignment
+    build:
+      context: .
+      dockerfile: MicroserviceAssignment/Dockerfile
+
+  clientapi:
+    image: ${DOCKER_REGISTRY-}clientapi
+    build:
+      context: .
+      dockerfile: ClientApi/Dockerfile
+

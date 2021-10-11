@@ -3,6 +3,7 @@ using CommonLib.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace ClientApi.Handlers
     }
     public class CustomerHandler : ICustomerHandler
     {
-        private readonly string CustomersRelativePath = @"Data\Customers";
+        private readonly string CustomersRelativePath = Path.Combine("Data", "Customers");
 
         public async Task<bool> CreateNewCustomer(Customer newCustomer)
         {

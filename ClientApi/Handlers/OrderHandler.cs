@@ -7,48 +7,52 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Net;
 using EasyNetQ;
+using Microsoft.Extensions.Options;
+using System.IO;
 
 namespace ClientApi.Handlers
 {
     public interface IOrderHandler
     {
-        Task<OrderResponse> CreateOrder(Order newOrder);
+        Task<OrderResponse> CreateOrder(NewOrder newOrder);
         Task<Order> GetOrderById(int orderId);
         Task<List<Order>> GetOrdersForCustomer(int customerId);
         Task<bool> UpdateOrderStatus(int orderId, int switchValue);
     }
     public class OrderHandler : IOrderHandler
     {
-        private readonly string OrdersRelativePath = @"Data\Orders";
-        private readonly CustomerHandler _customerHandler;
-        private readonly ApiConfig _config;
+        private readonly string OrdersRelativePath = Path.Combine("Data", "Orders");
+        private readonly ICustomerHandler _customerHandler;
+        private readonly IOptions<ApiConfig> _config;
         private readonly IBus _bus;
 
-        public OrderHandler(CustomerHandler handler, ApiConfig config)
+        public OrderHandler(ICustomerHandler handler, IOptions<ApiConfig> config)
         {
             _customerHandler = handler;
             _config = config;
-            _bus = RabbitHutch.CreateBus($"host = { _config.Host}; virtualHost = {_config.VUser}; username = {_config.VUser}; password = {_config.Password}");
+            _bus = RabbitHutch.CreateBus($"host={ _config.Value.Host};virtualHost={_config.Value.VUser};username={_config.Value.VUser};password={_config.Value.Password}");
         }
 
-        public async Task<OrderResponse> CreateOrder (Order newOrder)
+        public async Task<OrderResponse> CreateOrder (NewOrder newOrder)
         {
             var CustomerHistory = await CheckCustomerCreditability(newOrder.CustomerID);
-            if(CustomerHistory != null)
+            if(CustomerHistory.Count > 0)
             {
                 throw new ApiException(HttpStatusCode.Forbidden, $"Customer has {CustomerHistory.Count} unpaid order(s).");
             }
-            newOrder.OrderId = FileHelper.GetLastId(OrdersRelativePath) + 1;
+            var order = new Order { CustomerID = newOrder.CustomerID, ProductsList = newOrder.ProductsList };
+            order.OrderId = FileHelper.GetLastId(OrdersRelativePath) + 1;
+            order.OrderDate = DateTime.Now;
             try
             {
-                var response = await SendOrder(newOrder);
+                var response = await SendOrder(order);
                 if (response.Status == ShipmentStatus.Cancelled)
                 {
                     throw new ApiException(HttpStatusCode.NotAcceptable, $"Warehouse could not process the shipment. Message: {response.Message}");
                 }
-
-                var fileName = newOrder.OrderId.ToString();
-                var serializedOrder = JsonConvert.SerializeObject(newOrder);
+                order.Status = response.Status;
+                var fileName = order.OrderId.ToString();
+                var serializedOrder = JsonConvert.SerializeObject(order);
                 await FileHelper.AddOrOverwriteFile(OrdersRelativePath, fileName, serializedOrder);
                 return response;
 
@@ -86,13 +90,27 @@ namespace ClientApi.Handlers
             }
             order.Status = (ShipmentStatus)switchValue;
             var serializedOrder = JsonConvert.SerializeObject(order);
-            await FileHelper.AddOrOverwriteFile(OrdersRelativePath, $"{orderId.ToString()}.json", serializedOrder);
-            return true;
+            try
+            {
+                await SignalStatusUpdate(new StatusSignal { OrderId = orderId, Status = order.Status });
+
+                await FileHelper.AddOrOverwriteFile(OrdersRelativePath, $"{orderId.ToString()}.json", serializedOrder);
+                return true;
+            }catch (Exception e)
+            {
+                return false;
+            }
         }
 
         private async Task<OrderResponse> SendOrder(Order newOrder)
         {
             return await _bus.Rpc.RequestAsync<Order, OrderResponse>(newOrder);
+        }
+        private async Task<StatusSignal> SignalStatusUpdate(StatusSignal status)
+        {
+            var order = await GetOrderById(status.OrderId);
+            var statusMessage = new StatusSignalMessage { OrderId = status.OrderId, ProductsList = order.ProductsList, Status = status.Status };
+            return await _bus.Rpc.RequestAsync<StatusSignalMessage, StatusSignal>(statusMessage);
         }
 
         /// <summary>
@@ -100,16 +118,24 @@ namespace ClientApi.Handlers
         /// </summary>
         public async Task<List<Order>> CheckCustomerCreditability(int customerId)
         {
-            var customerOrders = await GetOrdersForCustomer(customerId);
-            var UnpaidOrders = new List<Order>();
-            foreach (var ord in customerOrders)
+            try
             {
-                if (ord.Status != ShipmentStatus.Paid || ord.Status != ShipmentStatus.Cancelled)
+                var customerOrders = await GetOrdersForCustomer(customerId);
+
+                var UnpaidOrders = new List<Order>();
+                foreach (var ord in customerOrders)
                 {
-                    UnpaidOrders.Add(ord);
+                    if (!(ord.Status == ShipmentStatus.Paid || ord.Status == ShipmentStatus.Cancelled))
+                    {
+                        UnpaidOrders.Add(ord);
+                    }
                 }
+                return UnpaidOrders;
             }
-            return UnpaidOrders;
+            catch (ApiException)
+            {
+                return null;
+            }
         }
     }
 }
