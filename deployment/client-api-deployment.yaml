@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-api-deployment
+  labels: 
+    app: client-api
+spec: 
+  selector: 
+    matchLabels:
+      app: client-api
+  strategy:
+    type: Recreate
+  template:
+    metadata: 
+      labels: 
+        app: client-api
+    spec:
+      containers:
+      - image: ada00s/dockerhub:clientapi
+        imagePullPolicy: Always
+        name: client-api
+        #In dockerhub containers are running to completion, so I made them run forever, since we need webapi to be available all the time
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "while true; do sleep 30; done;" ]
+        # ^^
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 35
+          periodSeconds: 10
