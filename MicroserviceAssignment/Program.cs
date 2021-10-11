@@ -1,5 +1,4 @@
 ﻿using MicroserviceAssignment.Handlers;
-using System;
 using System.Threading.Tasks;
 
 namespace MicroserviceAssignment
