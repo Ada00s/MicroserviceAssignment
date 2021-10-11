@@ -32,8 +32,8 @@ namespace MicroserviceAssignment
         private static class Settings
         {
             public const string Host = "cow.rmq2.cloudamqp.com";
-            public const string VirualHost = "sgjupbsr";
-            public const string Password = "YPG6BrZzn9WOWlzhopFZIr4bXKzz62zg";
+            public const string VirualHost = "upnvihcu";
+            public const string Password = "OkMPbpsOzpEUJjWCFuya9myDAypy1-41";
         }
     }
 }
